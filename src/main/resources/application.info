@@ -1,0 +1,12 @@
+application.code=kobitwebapi
+application.title=Kobit Web API
+application.description=Kobit Web API
+application.type=widget
+application.category=Rest
+developer.code=DMS
+developer.name=Danilo Marinho
+developer.url=https://kobit.com.br
+simple.deploy=false
+application.uiwidget=false
+view.file=view.ftl
+application.tenant.code=1

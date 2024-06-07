@@ -37,7 +37,7 @@ public class DefaultApiController {
     public Response GetTeste() {
         return Response.ok("OK").build();
     }
-    
+
     @POST
     @Path("/getTiposDeVeiculos")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -115,6 +115,37 @@ public class DefaultApiController {
                 clientes.add(cliente);
             }
             return Response.ok(clientes).build();
+        } catch (Exception e) {
+            log.error("[kobit_api] Erro ao buscar clientes", e);
+            return Response.status(Status.INTERNAL_SERVER_ERROR).entity(new ErrorStatus(e)).build();
+        }
+    }
+
+    @GET
+    @Path("/GetCliente")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getCliente(@QueryParam("cnpj") String cnpj, @QueryParam("dashboard") boolean dashboard) {
+        var query = "";
+        final var cnpjFinal = cnpj.length() == 18 ? cnpj : "0" + cnpj;
+
+        if (dashboard) {
+            query = "SELECT COD_CLIENTE, NOM_CLIENTE FROM LOGIX10PRD.CLIENTES " +
+                    "WHERE COD_CLIENTE IN (SELECT DISTINCT COD_CLIENTE FROM MON_GESTAOPROPOSTA_DASHBOARD) AND NUM_CGC_CPF = '"
+                    + cnpjFinal + "'";
+        } else {
+            query = "SELECT COD_CLIENTE, NOM_CLIENTE FROM LOGIX10PRD.CLIENTES WHERE NUM_CGC_CPF = '" + cnpjFinal + "'";
+        }
+
+        try (final var connection = LogixConnectionFactory.getConnection();
+                final var statement = connection.prepareStatement(query)) {
+            final var resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                final var cliente = new HashMap<String, String>();
+                cliente.put("codigo", resultSet.getString("COD_CLIENTE"));
+                cliente.put("NOM_CLIENTE", resultSet.getString("nome"));
+                return Response.ok(cliente).build();
+            }
+            return Response.status(Status.NOT_FOUND).build();
         } catch (Exception e) {
             log.error("[kobit_api] Erro ao buscar clientes", e);
             return Response.status(Status.INTERNAL_SERVER_ERROR).entity(new ErrorStatus(e)).build();

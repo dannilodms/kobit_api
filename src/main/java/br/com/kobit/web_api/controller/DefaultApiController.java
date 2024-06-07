@@ -171,4 +171,33 @@ public class DefaultApiController {
         }
     }
 
+    @GET
+    @Path("/GetUnidadeBrado")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getUnidadeBrado(@QueryParam("codigo") String codigo, @QueryParam("dashboard") boolean dashboard) {
+        var query = "";
+
+        if (dashboard) {
+            query = "SELECT DEN_EMPRESA FROM EMPRESA WHERE COD_EMPRESA IN (SELECT DISTINCT UNIDADE_NEGOCIO FROM MON_GESTAOPROPOSTA_DASHBOARD) AND COD_EMPRESA = '"
+                    + codigo + "'";
+        } else {
+            query = "SELECT DEN_EMPRESA FROM EMPRESA WHERE COD_CLIENTE IN ('003307926000970', '003307926001003', '003307926001607', '003307926003057') AND COD_EMPRESA = '"
+                    + codigo + "'";
+        }
+
+        try (final var connection = FluigConnectionFactory.getConnection();
+                final var statement = connection.prepareStatement(query)) {
+            final var resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                final var unidade = new HashMap<String, String>();
+                unidade.put("DEN_EMPRESA", resultSet.getString("DEN_EMPRESA"));
+                return Response.ok(unidade).build();
+            }
+            return Response.status(Status.NOT_FOUND).build();
+        } catch (Exception e) {
+            log.error("[kobit_api] Erro ao buscar unidade brado", e);
+            return Response.status(Status.INTERNAL_SERVER_ERROR).entity(new ErrorStatus(e)).build();
+        }
+    }
+
 }

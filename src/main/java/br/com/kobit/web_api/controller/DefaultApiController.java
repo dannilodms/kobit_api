@@ -189,9 +189,7 @@ public class DefaultApiController {
                 final var statement = connection.prepareStatement(query)) {
             final var resultSet = statement.executeQuery();
             if (resultSet.next()) {
-                final var unidade = new HashMap<String, String>();
-                unidade.put("DEN_EMPRESA", resultSet.getString("DEN_EMPRESA"));
-                return Response.ok(unidade).build();
+                return Response.ok(resultSet.getString("DEN_EMPRESA")).build();
             }
             return Response.status(Status.NOT_FOUND).build();
         } catch (Exception e) {

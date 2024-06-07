@@ -11,13 +11,9 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
-
-import org.xml.sax.SAXException;
 
 import br.com.kobit.web_api.config.FluigConnectionFactory;
 import br.com.kobit.web_api.config.LogixConnectionFactory;
@@ -60,6 +56,29 @@ public class DefaultApiController {
             return Response.ok(veiculos).build();
         } catch (Exception e) {
             log.error("[kobit_api] Erro ao buscar tipos de veiculos", e);
+            return Response.status(Status.INTERNAL_SERVER_ERROR).entity(new ErrorStatus(e)).build();
+        }
+    }
+
+    @GET
+    @Path("/GetSegmentos")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getSegmentos() {
+        var query = "SELECT ID, DESCRICAO FROM MON_GESTAOPROPOSTA_SEGMENTO ORDER BY ID";
+        ;
+        try (final var connection = FluigConnectionFactory.getConnection();
+                final var statement = connection.prepareStatement(query)) {
+            final var resultSet = statement.executeQuery();
+            final var segmentos = new ArrayList<Map<String, String>>();
+            while (resultSet.next()) {
+                final var segmento = new HashMap<String, String>();
+                segmento.put("ID", resultSet.getString("ID"));
+                segmento.put("DESCRICAO", resultSet.getString("DESCRICAO"));
+                segmentos.add(segmento);
+            }
+            return Response.ok(segmentos).build();
+        } catch (Exception e) {
+            log.error("[kobit_api] Erro ao buscar segmentos", e);
             return Response.status(Status.INTERNAL_SERVER_ERROR).entity(new ErrorStatus(e)).build();
         }
     }

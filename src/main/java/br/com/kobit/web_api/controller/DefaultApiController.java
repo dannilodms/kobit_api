@@ -173,7 +173,7 @@ public class DefaultApiController {
 
     @GET
     @Path("/GetUnidadeBrado")
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
     public Response getUnidadeBrado(@QueryParam("codigo") String codigo, @QueryParam("dashboard") boolean dashboard) {
         var query = "";
 

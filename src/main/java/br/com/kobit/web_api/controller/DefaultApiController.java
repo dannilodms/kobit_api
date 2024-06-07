@@ -202,7 +202,8 @@ public class DefaultApiController {
 
     @GET
     @Path("/ZoomUnidadesBrado")
-    public Response ZoomUnidadesBrado(@QueryParam("search") String search,
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response zoomUnidadesBrado(@QueryParam("search") String search,
             @QueryParam("qntdPorPagina") String qntdPorPagina, @QueryParam("pagina") String pagina,
             @QueryParam("dashboard") boolean dashboard) {
         var query = "";

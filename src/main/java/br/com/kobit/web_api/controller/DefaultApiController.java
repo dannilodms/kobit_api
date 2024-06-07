@@ -178,14 +178,14 @@ public class DefaultApiController {
         var query = "";
 
         if (dashboard) {
-            query = "SELECT DEN_EMPRESA FROM EMPRESA WHERE COD_EMPRESA IN (SELECT DISTINCT UNIDADE_NEGOCIO FROM MON_GESTAOPROPOSTA_DASHBOARD) AND COD_EMPRESA = '"
+            query = "SELECT DEN_EMPRESA FROM LOGIX10PRD.EMPRESA WHERE COD_EMPRESA IN (SELECT DISTINCT UNIDADE_NEGOCIO FROM MON_GESTAOPROPOSTA_DASHBOARD) AND COD_EMPRESA = '"
                     + codigo + "'";
         } else {
-            query = "SELECT DEN_EMPRESA FROM EMPRESA WHERE COD_CLIENTE IN ('003307926000970', '003307926001003', '003307926001607', '003307926003057') AND COD_EMPRESA = '"
+            query = "SELECT DEN_EMPRESA FROM LOGIX10PRD.EMPRESA WHERE COD_CLIENTE IN ('003307926000970', '003307926001003', '003307926001607', '003307926003057') AND COD_EMPRESA = '"
                     + codigo + "'";
         }
 
-        try (final var connection = FluigConnectionFactory.getConnection();
+        try (final var connection = LogixConnectionFactory.getConnection();
                 final var statement = connection.prepareStatement(query)) {
             final var resultSet = statement.executeQuery();
             if (resultSet.next()) {
@@ -200,4 +200,56 @@ public class DefaultApiController {
         }
     }
 
+    @GET
+    @Path("/ZoomUnidadesBrado")
+    public Response ZoomUnidadesBrado(@QueryParam("search") String search,
+            @QueryParam("qntdPorPagina") String qntdPorPagina, @QueryParam("pagina") String pagina,
+            @QueryParam("dashboard") boolean dashboard) {
+        var query = "";
+        if (dashboard) {
+            query = "SELECT COD_EMPRESA, DEN_EMPRESA FROM (SELECT a.COD_EMPRESA, a.DEN_EMPRESA, rownum row_num FROM (SELECT COD_EMPRESA, DEN_EMPRESA FROM LOGIX10PRD.EMPRESA "
+                    +
+                    "WHERE COD_EMPRESA IN (SELECT DISTINCT UNIDADE_NEGOCIO FROM MON_GESTAOPROPOSTA_DASHBOARD) "
+                    + ((search != null && !search.isEmpty())
+                            ? ("AND (UPPER(COD_EMPRESA) LIKE '%" + search.toUpperCase() + "%' OR " +
+                                    "UPPER(DEN_EMPRESA) LIKE '%" + search.toUpperCase() + "%') ")
+                            : "")
+                    +
+                    "ORDER BY DEN_EMPRESA " +
+                    ") a " +
+                    "WHERE rownum < ((" + pagina + " * " + qntdPorPagina + ") + 1 ) " +
+                    ") " +
+                    "WHERE row_num >= (((" + pagina + "-1) * " + qntdPorPagina + ") + 1)";
+        } else {
+            query = "SELECT COD_EMPRESA, DEN_EMPRESA FROM (SELECT a.COD_EMPRESA, a.DEN_EMPRESA, rownum row_num FROM (SELECT COD_EMPRESA, DEN_EMPRESA FROM LOGIX10PRD.EMPRESA "
+                    +
+                    "WHERE COD_CLIENTE IN ('003307926000970', '003307926001003', '003307926001607', '003307926003057') "
+                    + ((search != null && !search.isEmpty())
+                            ? ("AND (UPPER(COD_EMPRESA) LIKE '%" + search.toUpperCase() + "%' OR " +
+                                    "UPPER(DEN_EMPRESA) LIKE '%" + search.toUpperCase() + "%') ")
+                            : "")
+                    +
+                    "ORDER BY DEN_EMPRESA " +
+                    ") a " +
+                    "WHERE rownum < ((" + pagina + " * " + qntdPorPagina + ") + 1 ) " +
+                    ") " +
+                    "WHERE row_num >= (((" + pagina + "-1) * " + qntdPorPagina + ") + 1)";
+        }
+
+        try (final var connection = LogixConnectionFactory.getConnection();
+                final var statement = connection.prepareStatement(query)) {
+            final var resultSet = statement.executeQuery();
+            final var unidades = new ArrayList<Map<String, String>>();
+            while (resultSet.next()) {
+                final var unidade = new HashMap<String, String>();
+                unidade.put("COD_EMPRESA", resultSet.getString("COD_EMPRESA"));
+                unidade.put("DEN_EMPRESA", resultSet.getString("DEN_EMPRESA"));
+                unidades.add(unidade);
+            }
+            return Response.ok(unidades).build();
+        } catch (Exception e) {
+            log.error("[kobit_api] Erro ao buscar unidade brado", e);
+            return Response.status(Status.INTERNAL_SERVER_ERROR).entity(new ErrorStatus(e)).build();
+        }
+    }
 }

@@ -93,7 +93,8 @@ public class DefaultApiController {
         if (dashboard) {
             query = "SELECT COD_CLIENTE, NUM_CGC_CPF, NOM_CLIENTE FROM (SELECT a.COD_CLIENTE, a.NUM_CGC_CPF, a.NOM_CLIENTE, rownum row_num FROM (SELECT COD_CLIENTE, NUM_CGC_CPF, NOM_CLIENTE FROM LOGIX10PRD.CLIENTES "
                     +
-                    " WHERE COD_CLIENTE IN (SELECT DISTINCT COD_CLIENTE FROM LOGIX10PRD.MON_GESTAOPROPOSTA_DASHBOARD) "
+                    // " WHERE COD_CLIENTE IN (SELECT DISTINCT COD_CLIENTE FROM LOGIX10PRD.MON_GESTAOPROPOSTA_DASHBOARD) "
+                    " WHERE 1 = 1 "
                     + ((search != null && !search.isEmpty())
                             ? ("AND (UPPER(COD_CLIENTE) LIKE '%" + search.toUpperCase() + "%' OR " +
                                     "UPPER(NOM_CLIENTE) LIKE '%" + search.toUpperCase() + "%' OR " +

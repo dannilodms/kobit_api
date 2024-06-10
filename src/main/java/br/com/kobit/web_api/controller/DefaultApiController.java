@@ -1,6 +1,5 @@
 package br.com.kobit.web_api.controller;
 
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;

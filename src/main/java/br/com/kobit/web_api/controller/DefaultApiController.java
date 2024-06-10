@@ -212,8 +212,8 @@ public class DefaultApiController {
                     +
                     // "WHERE COD_EMPRESA IN (SELECT DISTINCT UNIDADE_NEGOCIO FROM
                     // MON_GESTAOPROPOSTA_DASHBOARD) "
-                    "WHERE 1 = 1 " 
-                    +((search != null && !search.isEmpty())
+                    "WHERE 1 = 1 "
+                    + ((search != null && !search.isEmpty())
                             ? ("AND (UPPER(COD_EMPRESA) LIKE '%" + search.toUpperCase() + "%' OR " +
                                     "UPPER(DEN_EMPRESA) LIKE '%" + search.toUpperCase() + "%') ")
                             : "")
@@ -252,6 +252,59 @@ public class DefaultApiController {
             return Response.ok(unidades).build();
         } catch (Exception e) {
             log.error("[kobit_api] Erro ao buscar unidade brado", e);
+            return Response.status(Status.INTERNAL_SERVER_ERROR).entity(new ErrorStatus(e)).build();
+        }
+    }
+
+    @GET
+    @Path("/ZoomResponsaveisComercial")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response zoomResponsaveisComercial(@QueryParam("search") String search,
+            @QueryParam("qntdPorPagina") String qntdPorPagina, @QueryParam("pagina") String pagina,
+            @QueryParam("dashboard") boolean dashboard) {
+        var query = "";
+        if (dashboard) {
+            query = "SELECT CODIGO, NOME FROM (SELECT a.CODIGO, a.NOME, rownum row_num FROM (SELECT CODIGO, NOME FROM MON_GESTAOPROPOSTA_RESPCOM "
+                    +
+                    "WHERE CODIGO IN (SELECT DISTINCT GERENTE FROM MON_GESTAOPROPOSTA_DASHBOARD) "
+                    + ((search != null && !search.isEmpty())
+                            ? ("AND (UPPER(NOME) LIKE '%" + search.toUpperCase() + "%') ")
+                            : "")
+                    +
+                    "ORDER BY NOME " +
+                    ") a " +
+                    "WHERE rownum < ((" + pagina + " * " + qntdPorPagina + ") + 1 ) " +
+                    ") " +
+                    "WHERE row_num >= (((" + pagina + "-1) * " + qntdPorPagina + ") + 1)";
+        } else {
+            query = "SELECT CODIGO, NOME, EMAIL FROM (SELECT a.CODIGO, a.NOME, a.EMAIL, rownum row_num FROM (SELECT CODIGO, NOME, EMAIL FROM MON_GESTAOPROPOSTA_RESPCOM "
+                    +
+                    "WHERE ATIVO = 1 "
+                    + ((search != null && !search.isEmpty())
+                            ? ("AND (UPPER(NOME) LIKE '%" + search.toUpperCase() + "%' OR " +
+                                    "UPPER(EMAIL) LIKE '%" + search.toUpperCase() + "%') ")
+                            : "")
+                    +
+                    "ORDER BY NOME " +
+                    ") a " +
+                    "WHERE rownum < ((" + pagina + " * " + qntdPorPagina + ") + 1 ) " +
+                    ") " +
+                    "WHERE row_num >= (((" + pagina + "-1) * " + qntdPorPagina + ") + 1)";
+        }
+
+        try (final var connection = FluigConnectionFactory.getConnection();
+                final var statement = connection.prepareStatement(query)) {
+            final var resultSet = statement.executeQuery();
+            final var responsaveis = new ArrayList<Map<String, String>>();
+            while (resultSet.next()) {
+                final var responsavel = new HashMap<String, String>();
+                responsavel.put("CODIGO", resultSet.getString("CODIGO"));
+                responsavel.put("NOME", resultSet.getString("NOME"));
+                responsaveis.add(responsavel);
+            }
+            return Response.ok(responsaveis).build();
+        } catch (Exception e) {
+            log.error("[kobit_api] Erro ao buscar responsaveis", e);
             return Response.status(Status.INTERNAL_SERVER_ERROR).entity(new ErrorStatus(e)).build();
         }
     }

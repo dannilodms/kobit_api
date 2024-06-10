@@ -300,6 +300,8 @@ public class DefaultApiController {
                 final var responsavel = new HashMap<String, String>();
                 responsavel.put("CODIGO", resultSet.getString("CODIGO"));
                 responsavel.put("NOME", resultSet.getString("NOME"));
+                if (!dashboard)
+                    responsavel.put("EMAIL", resultSet.getString("EMAIL"));
                 responsaveis.add(responsavel);
             }
             return Response.ok(responsaveis).build();

@@ -258,7 +258,7 @@ public class DefaultApiController {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTiposNegocio() {
         final var query = "SELECT ID, DESCRICAO FROM MON_GESTAOPROPOSTA_TIPONEG ORDER BY ID";
-        try (final var connection = LogixConnectionFactory.getConnection();
+        try (final var connection = FluigConnectionFactory.getConnection();
                 final var statement = connection.prepareStatement(query)) {
             final var resultSet = statement.executeQuery();
             final var tiposNegocio = new ArrayList<Map<String, String>>();

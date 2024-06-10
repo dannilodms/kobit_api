@@ -273,4 +273,26 @@ public class DefaultApiController {
             return Response.status(Status.INTERNAL_SERVER_ERROR).entity(new ErrorStatus(e)).build();
         }
     }
+
+    @GET
+    @Path("/GetStatus")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getStatus() {
+        final var query = "SELECT ID, DESCRICAO FROM MON_GESTAOPROPOSTA_STATUS ORDER BY ID";
+        try (final var connection = FluigConnectionFactory.getConnection();
+                final var statement = connection.prepareStatement(query)) {
+            final var resultSet = statement.executeQuery();
+            final var tiposNegocio = new ArrayList<Map<String, String>>();
+            while (resultSet.next()) {
+                final var tipoNegocio = new HashMap<String, String>();
+                tipoNegocio.put("ID", resultSet.getString("ID"));
+                tipoNegocio.put("DESCRICAO", resultSet.getString("DESCRICAO"));
+                tiposNegocio.add(tipoNegocio);
+            }
+            return Response.ok(tiposNegocio).build();
+        } catch (Exception e) {
+            log.error("[kobit_api] Erro ao buscar status", e);
+            return Response.status(Status.INTERNAL_SERVER_ERROR).entity(new ErrorStatus(e)).build();
+        }
+    }
 }

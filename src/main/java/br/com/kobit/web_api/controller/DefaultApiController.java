@@ -65,7 +65,6 @@ public class DefaultApiController {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getSegmentos() {
         var query = "SELECT ID, DESCRICAO FROM MON_GESTAOPROPOSTA_SEGMENTO ORDER BY ID";
-        ;
         try (final var connection = FluigConnectionFactory.getConnection();
                 final var statement = connection.prepareStatement(query)) {
             final var resultSet = statement.executeQuery();

@@ -40,8 +40,8 @@ public class GestaoPropostaComercialController {
                 "LEFT JOIN MON_GESTAOPROPOSTA_TIPONEG TP ON TP.ID = D.TIPO_NEGOCIO " +
                 "LEFT JOIN MON_GESTAOPROPOSTA_STATUS ST ON ST.ID = D.STATUS " +
                 "WHERE 1 = 1 "
-                + (dataInicial.equals("") ? "" : ("AND TO_DATE(DATA_INICIO, 'dd/MM/yyyy') >= TO_DATE('" + dataInicial + "', 'dd/MM/yyyy') ")) 
-                + (dataFinal.equals("") ? "" : ("AND TO_DATE(DATA_INICIO, 'dd/MM/yyyy') <= TO_DATE('" + dataFinal + "', 'dd/MM/yyyy') "))
+                + (dataInicial.equals("") ? "" : ("AND TRUNC(DATA_INICIO) >= TO_DATE('" + dataInicial + "', 'dd/MM/yyyy') ")) 
+                + (dataFinal.equals("") ? "" : ("AND TRUNC(DATA_INICIO) <= TO_DATE('" + dataFinal + "', 'dd/MM/yyyy') "))
                 + (cliente.equals("") ? "" : ("AND D.COD_CLIENTE = '" + cliente + "' "))
                 + (gerente.equals("") ? "" : ("AND GERENTE = " + gerente + " "))
                 + (tipoNegocio.equals("") ? "" : ("AND TIPO_NEGOCIO = " + tipoNegocio + " "))
